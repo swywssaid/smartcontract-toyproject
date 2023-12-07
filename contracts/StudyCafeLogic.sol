@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract StudyCafeContract {
-    address public owner;
-    uint256 public monthlySubscriptionFee = 100000; // 100,000 원
-    mapping(address => uint256) public userBalances;
-    mapping(address => uint256) public userPaybackBalances;
-    mapping(address => uint256) public continuousAttendanceDays;
-    mapping(address => uint256) public lastCheckInDate;
+import "./StudyCafeStorage.sol";
+
+contract StudyCafeLogic is StudyCafeStorage {
     event Payment(address indexed payer, uint256 amount);
     event Attendance(address indexed attendee, uint256 totalAttendanceDays, uint256 percentage, uint256 reward);
 
@@ -17,8 +13,9 @@ contract StudyCafeContract {
         _;
     }
 
-    constructor() {
+     constructor(uint256 _monthlySubscriptionFee) {
         owner = msg.sender;
+        monthlySubscriptionFee = _monthlySubscriptionFee;
         continuousAttendanceDays[msg.sender] = 0;
     }
 
