@@ -56,9 +56,4 @@ contract StudyCafeProxy is StudyCafeStorage {
     function setLogicContract(address _logicContract) external onlyOwner {
         logicContract = _logicContract;
     }
-
-     // receive 함수: 직접적인 이더 전송을 처리
-    receive() external payable {
-        // 추가적인 처리 로직을 여기에 추가
-    }
 }
