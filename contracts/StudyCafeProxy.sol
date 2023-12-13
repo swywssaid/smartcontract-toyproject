@@ -10,7 +10,18 @@ contract StudyCafeProxy {
     address public currentLogic;
     address public currentStorage;
 
+    /**
+     * @dev Emitted when a payment is received.
+     * @param sender The address of the sender.
+     * @param amount The amount of ether sent.
+     */
     event Payment(address indexed sender, uint256 amount);
+
+    /**
+     * @dev Emitted when the logic or storage contract is upgraded.
+     * @param newLogic The address of the new logic contract.
+     * @param newStorage The address of the new storage contract.
+     */
     event Upgraded(address indexed newLogic, address indexed newStorage);
 
     /**

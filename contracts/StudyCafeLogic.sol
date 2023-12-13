@@ -9,8 +9,27 @@ import "./StudyCafeStorage.sol";
  * seat reservations, attendance tracking, and user refunds.
  */
 contract StudyCafeLogic is StudyCafeStorage {
+    /**
+     * @dev Emitted when a payment is received.
+     * @param payer The address of the payer.
+     * @param amount The amount of ether paid.
+     */
     event Payment(address indexed payer, uint256 amount);
+
+    /**
+     * @dev Emitted when a user checks in, providing attendance information and rewards.
+     * @param attendee The address of the attendee.
+     * @param totalAttendanceDays The total consecutive attendance days.
+     * @param percentage The payback percentage, determining the reward.
+     * @param reward The reward amount in ether.
+     */
     event Attendance(address indexed attendee, uint256 totalAttendanceDays, uint256 percentage, uint256 reward);
+
+    /**
+     * @dev Emitted when a customer reserves a seat.
+     * @param customer The address of the customer reserving the seat.
+     * @param seatNumber The reserved seat number.
+     */
     event SeatReserved(address indexed customer, uint256 seatNumber);
 
     /**
