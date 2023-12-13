@@ -14,7 +14,7 @@ contract StudyCafeLogic is StudyCafeStorage {
         _;
     }
 
-     constructor(uint256 _monthlySubscriptionFee, uint256 _dailySubscriptionFee, uint256 _totalSeats) {
+    constructor(uint256 _monthlySubscriptionFee, uint256 _dailySubscriptionFee, uint256 _totalSeats) {
         owner = msg.sender;
         monthlySubscriptionFee = _monthlySubscriptionFee;
         dailySubscriptionFee =_dailySubscriptionFee;
@@ -84,6 +84,15 @@ contract StudyCafeLogic is StudyCafeStorage {
         emit Attendance(msg.sender, continuousAttendanceDays[msg.sender], percentage, reward);
     }
 
+    // 환불 함수
+    function refund(address customer) external onlyOwner {
+        require(userBalances[customer] > 0, "Customer has no balance to refund.");
+        payable(address(customer)).transfer(userBalances[customer]);
+
+        // 사용자의 잔고를 0으로 초기화
+        userBalances[customer] = 0;
+    }
+
     // 페이백 비율 계산 함수
     function calculatePercentage(uint256 daysAttended) internal pure returns (uint256) {
         if (daysAttended % 7 == 0) {
@@ -96,14 +105,5 @@ contract StudyCafeLogic is StudyCafeStorage {
     // 페이백 값 계산 함수
     function calculateReward(uint256 percentage) internal view returns (uint256) {
         return percentage * monthlySubscriptionFee / 10000;
-    }
-
-    // 환불 함수
-    function refund(address customer) external onlyOwner {
-        require(userBalances[customer] > 0, "Customer has no balance to refund.");
-        payable(address(customer)).transfer(userBalances[customer]);
-
-        // 사용자의 잔고를 0으로 초기화
-        userBalances[customer] = 0;
     }
 }
