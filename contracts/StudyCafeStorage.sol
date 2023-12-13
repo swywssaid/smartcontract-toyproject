@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+/**
+ * @title StudyCafeStorage
+ * @dev Storage contract for the Study Cafe application, containing state variables and mappings.
+ */
 contract StudyCafeStorage {
-    address public owner;
+    address public admin;
     uint256 public monthlySubscriptionFee;
     uint256 public totalSeats;
     uint256 public dailySubscriptionFee;
