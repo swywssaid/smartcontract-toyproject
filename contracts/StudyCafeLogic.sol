@@ -85,6 +85,34 @@ contract StudyCafeLogic is StudyCafeStorage {
     }
 
     /**
+     * @dev Allows a user to use their payback balances to offset subscription fees.
+     */
+    function usePaybackBalances() external {
+        require(userPaybackBalances[msg.sender] > 0, "No payback balances available");
+
+        uint256 paybackAmount = userPaybackBalances[msg.sender];
+        uint256 remainingSubscriptionFee;
+
+        // If payback balances are greater than or equal to the monthly subscription fee
+        if (paybackAmount >= monthlySubscriptionFee) {
+            remainingSubscriptionFee = 0;
+            userPaybackBalances[msg.sender] -= monthlySubscriptionFee;
+        } else {
+            remainingSubscriptionFee = monthlySubscriptionFee - paybackAmount;
+            userPaybackBalances[msg.sender] = 0;
+        }
+
+        // Update user balances and emit Payment event
+        if (remainingSubscriptionFee > 0) {
+            require(userBalances[msg.sender] >= remainingSubscriptionFee, "Insufficient funds");
+            userBalances[msg.sender] -= remainingSubscriptionFee;
+            emit Payment(msg.sender, remainingSubscriptionFee);
+        }
+
+        emit Refund(msg.sender, paybackAmount);
+    }    
+    
+    /**
      * @dev Sets the total number of seats, restricted to the admin.
      * @param _totalSeats The new total number of seats.
      */
