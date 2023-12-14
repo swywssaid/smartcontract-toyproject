@@ -113,9 +113,11 @@ contract StudyCafeLogic is StudyCafeStorage {
             require(seatToCustomer[_seatNumber] == address(0), "Please select another seat");
 
             address customer = msg.sender;
+            uint256 oldSeat = customerToSeat[customer];
 
             seatToCustomer[_seatNumber] = customer;
             customerToSeat[customer] = _seatNumber;
+            seatToCustomer[oldSeat] = address(0);
 
             emit SeatReserved(customer, _seatNumber);
     }
