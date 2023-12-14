@@ -54,6 +54,13 @@ contract StudyCafeLogic is StudyCafeStorage {
     event CheckIn(address indexed customer, bool checkInState); 
 
     /**
+     * @dev Emitted when admin rights are transferred to a new address.
+     * @param previousAdmin The address of the previous admin.
+     * @param newAdmin The address of the new admin.
+     */
+    event AdminTransferred(address indexed previousAdmin, address indexed newAdmin);
+
+    /**
      * @dev Modifier to restrict access to the admin only.
      */
     modifier onlyAdmin() {
@@ -111,7 +118,7 @@ contract StudyCafeLogic is StudyCafeStorage {
 
         emit Refund(msg.sender, paybackAmount);
     }    
-    
+
     /**
      * @dev Sets the total number of seats, restricted to the admin.
      * @param _totalSeats The new total number of seats.
@@ -234,6 +241,16 @@ contract StudyCafeLogic is StudyCafeStorage {
 
         emit Refund(customer, userBalances[customer]);
         userBalances[customer] = 0;
+    }
+
+    /**
+     * @dev Allows the current admin to transfer admin rights to a new address.
+     * @param newAdmin The address of the new admin.
+     */
+    function transferAdmin(address newAdmin) external onlyAdmin {
+        require(newAdmin != address(0), "Invalid admin address");
+        admin = newAdmin;
+        emit AdminTransferred(msg.sender, newAdmin);
     }
 
     /**
