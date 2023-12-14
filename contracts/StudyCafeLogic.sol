@@ -165,11 +165,16 @@ contract StudyCafeLogic is StudyCafeStorage {
     }
     
     /**
-     * @dev Allows a user to check in, updating attendance records and emitting an Attendance event.
+     * @dev Allows a user to check in based on GPS check, updating attendance records and emitting an Attendance event.
+     * @param gpsCheckResult The result of the GPS check, true if the user is at the study cafe, false otherwise.
      */
-    function checkIn() external {
-        require(checkInState[msg.sender] = false, "Already check in");
+    function checkInWithGPS(bool gpsCheckResult) external {
+        require(!checkInState[msg.sender], "Already checked in");
         require(userBalances[msg.sender] >= dailySubscriptionFee, "Insufficient funds");
+
+        // Add GPS check condition
+        require(gpsCheckResult, "GPS check failed. Please check in at the study cafe.");
+
         // Convert current UTC time to Korea Standard Time (KST)
         uint256 currentTimeKST = block.timestamp + 9 hours; // UTC to KST
 
