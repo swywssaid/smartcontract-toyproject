@@ -133,35 +133,67 @@ contract StudyCafeLogic is StudyCafeStorage {
      * @dev Allows a user to check in, updating attendance records and emitting an Attendance event.
      */
     function checkIn() external {
-        require(userBalances[msg.sender] >= monthlySubscriptionFee, "Insufficient funds");
+        require(checkInState[msg.sender] = false, "Already check in");
+        require(userBalances[msg.sender] >= dailySubscriptionFee, "Insufficient funds");
         // Convert current UTC time to Korea Standard Time (KST)
         uint256 currentTimeKST = block.timestamp + 9 hours; // UTC to KST
 
         // Calculate the last midnight in KST
         uint256 lastMidnightKST = (currentTimeKST / 1 days) * 1 days;       
 
-        if (lastMidnightKST - lastCheckInDate[msg.sender] == 1 days) {
+        if (lastMidnightKST - lastCheckInMidnightDate[msg.sender] == 1 days) {
             continuousAttendanceDays[msg.sender]++;
             uint256 percentage = calculatePercentage(continuousAttendanceDays[msg.sender]);
             uint256 reward = calculateReward(percentage);
             userBalances[msg.sender] -= dailySubscriptionFee;
             userPaybackBalances[msg.sender] += reward;
 
-            lastCheckInDate[msg.sender] = lastMidnightKST;
+            lastCheckInMidnightDate[msg.sender] = lastMidnightKST;
             emit Attendance(msg.sender, continuousAttendanceDays[msg.sender], percentage, reward);
-        } else if (lastMidnightKST - lastCheckInDate[msg.sender] > 1 days) {
+        } else if (lastMidnightKST - lastCheckInMidnightDate[msg.sender] > 1 days) {
             continuousAttendanceDays[msg.sender] = 1;
             uint256 percentage = calculatePercentage(continuousAttendanceDays[msg.sender]);
             uint256 reward = calculateReward(percentage);
             userBalances[msg.sender] -= dailySubscriptionFee;
             userPaybackBalances[msg.sender] += reward;
 
-            lastCheckInDate[msg.sender] = lastMidnightKST;
+            lastCheckInMidnightDate[msg.sender] = lastMidnightKST;
             emit Attendance(msg.sender, continuousAttendanceDays[msg.sender], percentage, reward);
         }
-        
-        lastCheckInDate[msg.sender] = lastMidnightKST;
+
+        lastCheckInDate[msg.sender] = currentTimeKST;
+        lastCheckInMidnightDate[msg.sender] = lastMidnightKST;
+        checkInState[msg.sender] = true;
         emit CheckIn(msg.sender, true);
+    }
+
+    /**
+     * @dev Allows a user to check out, updating attendance records and emitting an Attendance event.
+     */
+    function checkOut() external {
+        require(checkInState[msg.sender] = true, "Already check out");
+        require(userBalances[msg.sender] >= dailySubscriptionFee, "Insufficient funds");
+        // Convert current UTC time to Korea Standard Time (KST)
+        uint256 currentTimeKST = block.timestamp + 9 hours; // UTC to KST
+
+        // Calculate the last midnight in KST
+        uint256 lastMidnightKST = (currentTimeKST / 1 days) * 1 days;       
+
+        if (lastMidnightKST - lastCheckInMidnightDate[msg.sender] == 1 days) {
+            continuousAttendanceDays[msg.sender]++;
+            uint256 percentage = calculatePercentage(continuousAttendanceDays[msg.sender]);
+            uint256 reward = calculateReward(percentage);
+            userBalances[msg.sender] -= dailySubscriptionFee;
+            userPaybackBalances[msg.sender] += reward;
+
+            lastCheckInMidnightDate[msg.sender] = lastMidnightKST;
+            emit Attendance(msg.sender, continuousAttendanceDays[msg.sender], percentage, reward);
+        }
+
+        lastCheckInDate[msg.sender] = currentTimeKST;
+        lastCheckInMidnightDate[msg.sender] = lastMidnightKST;
+        checkInState[msg.sender] = false;
+        emit CheckIn(msg.sender, false);
     }
 
     /**
