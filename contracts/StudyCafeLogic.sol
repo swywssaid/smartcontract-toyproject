@@ -33,6 +33,20 @@ contract StudyCafeLogic is StudyCafeStorage {
     event SeatReserved(address indexed customer, uint256 seatNumber);
 
     /**
+     * @dev Emitted when a customer is refunded.
+     * @param customer The address of the customer being refunded.
+     * @param amount The refunded amount.
+     */
+    event Refund(address indexed customer, uint256 amount);
+
+    /**
+     * @dev Emitted when the total number of seats is updated by the admin.
+     * @param admin The address of the admin who updated the total number of seats.
+     * @param newTotalSeats The new total number of seats.
+     */
+    event TotalSeatsUpdated(address indexed admin, uint256 newTotalSeats);
+
+    /**
      * @dev Modifier to restrict access to the admin only.
      */
     modifier onlyAdmin() {
@@ -69,6 +83,7 @@ contract StudyCafeLogic is StudyCafeStorage {
      */
     function setTotalSeats(uint256 _totalSeats) external onlyAdmin {
         totalSeats = _totalSeats;
+        emit TotalSeatsUpdated(admin, _totalSeats);
     }
 
      /**
@@ -136,6 +151,7 @@ contract StudyCafeLogic is StudyCafeStorage {
         require(userBalances[customer] > 0, "Customer has no balance to refund.");
         payable(address(customer)).transfer(userBalances[customer]);
 
+        emit Refund(customer, userBalances[customer]);
         userBalances[customer] = 0;
     }
 

@@ -3,25 +3,30 @@ const { ethers } = require("hardhat");
 
 describe("StudyCafeProxy", () => {
   let StudyCafeProxy;
-  let admin;
+  let StudyCafeStorage;
+  let StudyCafeLogic;
+  let owner;
   let customer;
 
   before(async () => {
-    [admin, customer] = await ethers.getSigners();
+    [owner, customer] = await ethers.getSigners();
 
-    // 배포된 컨트랙트 인스턴스 생성
+    // Deploy StudyCafeStorage
     const _StudyCafeStorage = await ethers.getContractFactory(
       "StudyCafeStorage"
     );
+    StudyCafeStorage = await _StudyCafeStorage.deploy();
+
+    // Deploy StudyCafeLogic
     const _StudyCafeLogic = await ethers.getContractFactory("StudyCafeLogic");
-    const _StudyCafeProxy = await ethers.getContractFactory("StudyCafeProxy");
-    const StudyCafeStorage = await _StudyCafeStorage.deploy();
-    const StudyCafeLogic = await _StudyCafeLogic.deploy(
+    StudyCafeLogic = await _StudyCafeLogic.deploy(
       ethers.utils.parseEther("1"),
       ethers.utils.parseEther("0.05"),
       10
     );
 
+    // Deploy StudyCafeProxy with initial logic and storage addresses
+    const _StudyCafeProxy = await ethers.getContractFactory("StudyCafeProxy");
     StudyCafeProxy = await _StudyCafeProxy.deploy(
       StudyCafeLogic.address,
       StudyCafeStorage.address
@@ -29,21 +34,21 @@ describe("StudyCafeProxy", () => {
   });
 
   it("should pay monthly subscription", async () => {
-    // customer가 월 구독료 지불
+    // Customer pays the monthly subscription
     await StudyCafeProxy.connect(customer).payMonthlySubscription({
       value: ethers.utils.parseEther("1"),
     });
 
-    // customer의 잔고 확인
+    // Check customer's balance
     const balance = await StudyCafeProxy.userBalances(customer.address);
     expect(balance).to.equal(ethers.utils.parseEther("1"));
   });
 
   it("should reserve a seat", async () => {
-    // customer가 좌석 예약
+    // Customer reserves a seat
     await StudyCafeProxy.connect(customer).reserveSeat(1);
 
-    // 좌석 및 고객 확인
+    // Check seat and customer
     const seatNumber = await StudyCafeProxy.customerToSeat(customer.address);
     const reservedCustomer = await StudyCafeProxy.seatToCustomer(1);
 
@@ -52,10 +57,10 @@ describe("StudyCafeProxy", () => {
   });
 
   it("should change seat", async () => {
-    // customer가 좌석 변경
+    // Customer changes seat
     await StudyCafeProxy.connect(customer).changeSeat(2);
 
-    // 좌석 및 고객 확인
+    // Check seat and customer
     const seatNumber = await StudyCafeProxy.customerToSeat(customer.address);
     const reservedCustomer = await StudyCafeProxy.seatToCustomer(2);
 
@@ -64,10 +69,10 @@ describe("StudyCafeProxy", () => {
   });
 
   it("should check in and calculate rewards", async () => {
-    // customer가 출석체크
+    // Customer checks in
     await StudyCafeProxy.connect(customer).checkIn();
 
-    // 출석체크 결과 확인
+    // Check attendance and reward balance
     const attendanceDays = await StudyCafeProxy.continuousAttendanceDays(
       customer.address
     );
@@ -75,26 +80,29 @@ describe("StudyCafeProxy", () => {
       customer.address
     );
 
-    // 출석체크 결과에 따른 값 검증
-    expect(attendanceDays).to.equal(1); // 첫 출석이므로 1이어야 합니다.
-    expect(rewardBalance).to.equal(ethers.utils.parseEther("0.001")); // 0.1%에 해당하는 페이백이어야 합니다.
+    // Verify attendance and reward balance
+    expect(attendanceDays).to.equal(1); // First attendance, so it should be 1.
+    expect(rewardBalance).to.equal(ethers.utils.parseEther("0.001")); // Should be 0.1% payback.
   });
 
-  it("should refund balance to the admin", async () => {
-    // 한달 이용료 입급 후 잔액
+  it("should refund balance to the owner", async () => {
+    // Check customer's balance after monthly subscription payment
     const afterPaymentBalance = await StudyCafeProxy.userBalances(
       customer.address
     );
 
-    expect(afterPaymentBalance).to.equal(ethers.utils.parseEther("0.95"));
+    // Verify the balance after monthly subscription payment
+    expect(afterPaymentBalance).to.equal(ethers.utils.parseEther("0.95")); // The entire balance in the contract should be refunded to the owner.
 
-    // admin가 환불 실행
+    // Owner initiates the refund
     await StudyCafeProxy.refund(customer.address);
+
+    // Check customer's balance after the refund
     const afterRefundBalance = await StudyCafeProxy.userBalances(
       customer.address
     );
 
-    // 해당 고객의 잔고가 초기화되었는지 확인
+    // Verify that the customer's balance is reset to 0 after the refund
     expect(afterRefundBalance).to.equal(0);
   });
 });
