@@ -47,6 +47,13 @@ contract StudyCafeLogic is StudyCafeStorage {
     event TotalSeatsUpdated(address indexed admin, uint256 newTotalSeats);
 
     /**
+     * @dev Emitted when a customer checks in, indicating the check-in state.
+     * @param customer The address of the customer who checked in.
+     * @param checkInState The state of the check-in, true if checked in, false otherwise.
+     */
+    event CheckIn(address indexed customer, bool checkInState); 
+
+    /**
      * @dev Modifier to restrict access to the admin only.
      */
     modifier onlyAdmin() {
@@ -127,22 +134,34 @@ contract StudyCafeLogic is StudyCafeStorage {
      */
     function checkIn() external {
         require(userBalances[msg.sender] >= monthlySubscriptionFee, "Insufficient funds");
-        uint256 currentTime = block.timestamp;
-        require(currentTime - lastCheckInDate[msg.sender] >= 1 days, "Already check in");
+        // Convert current UTC time to Korea Standard Time (KST)
+        uint256 currentTimeKST = block.timestamp + 9 hours; // UTC to KST
 
-        if (currentTime - lastCheckInDate[msg.sender] >= 1 days && currentTime - lastCheckInDate[msg.sender] < 2 days) {
+        // Calculate the last midnight in KST
+        uint256 lastMidnightKST = (currentTimeKST / 1 days) * 1 days;       
+
+        if (lastMidnightKST - lastCheckInDate[msg.sender] == 1 days) {
             continuousAttendanceDays[msg.sender]++;
-        } else {
+            uint256 percentage = calculatePercentage(continuousAttendanceDays[msg.sender]);
+            uint256 reward = calculateReward(percentage);
+            userBalances[msg.sender] -= dailySubscriptionFee;
+            userPaybackBalances[msg.sender] += reward;
+
+            lastCheckInDate[msg.sender] = lastMidnightKST;
+            emit Attendance(msg.sender, continuousAttendanceDays[msg.sender], percentage, reward);
+        } else if (lastMidnightKST - lastCheckInDate[msg.sender] > 1 days) {
             continuousAttendanceDays[msg.sender] = 1;
+            uint256 percentage = calculatePercentage(continuousAttendanceDays[msg.sender]);
+            uint256 reward = calculateReward(percentage);
+            userBalances[msg.sender] -= dailySubscriptionFee;
+            userPaybackBalances[msg.sender] += reward;
+
+            lastCheckInDate[msg.sender] = lastMidnightKST;
+            emit Attendance(msg.sender, continuousAttendanceDays[msg.sender], percentage, reward);
         }
-
-        uint256 percentage = calculatePercentage(continuousAttendanceDays[msg.sender]);
-        uint256 reward = calculateReward(percentage);
-        userBalances[msg.sender] -= dailySubscriptionFee;
-        userPaybackBalances[msg.sender] += reward;
-
-        lastCheckInDate[msg.sender] = currentTime;
-        emit Attendance(msg.sender, continuousAttendanceDays[msg.sender], percentage, reward);
+        
+        lastCheckInDate[msg.sender] = lastMidnightKST;
+        emit CheckIn(msg.sender, true);
     }
 
     /**
