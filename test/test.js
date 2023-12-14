@@ -3,11 +3,11 @@ const { ethers } = require("hardhat");
 
 describe("StudyCafeProxy", () => {
   let StudyCafeProxy;
-  let owner;
+  let admin;
   let customer;
 
   before(async () => {
-    [owner, customer] = await ethers.getSigners();
+    [admin, customer] = await ethers.getSigners();
 
     // 배포된 컨트랙트 인스턴스 생성
     const _StudyCafeStorage = await ethers.getContractFactory(
@@ -80,15 +80,15 @@ describe("StudyCafeProxy", () => {
     expect(rewardBalance).to.equal(ethers.utils.parseEther("0.001")); // 0.1%에 해당하는 페이백이어야 합니다.
   });
 
-  it("should refund balance to the owner", async () => {
+  it("should refund balance to the admin", async () => {
     // 한달 이용료 입급 후 잔액
     const afterPaymentBalance = await StudyCafeProxy.userBalances(
       customer.address
     );
 
-    expect(afterPaymentBalance).to.equal(ethers.utils.parseEther("0.95")); // 컨트랙트에 있는 잔고 전액이 owner에게 환불되어야 합니다.
+    expect(afterPaymentBalance).to.equal(ethers.utils.parseEther("0.95"));
 
-    // owner가 환불 실행
+    // admin가 환불 실행
     await StudyCafeProxy.refund(customer.address);
     const afterRefundBalance = await StudyCafeProxy.userBalances(
       customer.address

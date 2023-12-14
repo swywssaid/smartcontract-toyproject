@@ -136,7 +136,6 @@ contract StudyCafeLogic is StudyCafeStorage {
         require(userBalances[customer] > 0, "Customer has no balance to refund.");
         payable(address(customer)).transfer(userBalances[customer]);
 
-        // 사용자의 잔고를 0으로 초기화
         userBalances[customer] = 0;
     }
 
