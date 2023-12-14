@@ -62,10 +62,10 @@ contract StudyCafeProxy {
 
     /**
      * @dev Function to upgrade the logic and storage addresses.
-     * @param _newLogic The new logic contract address.
-     * @param _newStorage The new storage contract address.
      * @dev Only accessible by the admin.
      * @dev Emits an Upgraded event after successful upgrade.
+     * @param _newLogic The new logic contract address.
+     * @param _newStorage The new storage contract address.
      */
     function upgrade(address _newLogic, address _newStorage) external onlyAdmin {
         // Update logic and storage addresses
