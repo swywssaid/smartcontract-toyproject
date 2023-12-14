@@ -237,9 +237,13 @@ contract StudyCafeLogic is StudyCafeStorage {
      */
     function refund(address customer) external onlyAdmin {
         require(userBalances[customer] > 0, "Customer has no balance to refund.");
-        payable(address(customer)).transfer(userBalances[customer]);
 
-        emit Refund(customer, userBalances[customer]);
+        uint256 refundAmount = userBalances[customer];
+        require(address(this).balance >= refundAmount, "Insufficient contract balance for refund.");
+
+        payable(customer).transfer(refundAmount);
+
+        emit Refund(customer, refundAmount);
         userBalances[customer] = 0;
     }
 
