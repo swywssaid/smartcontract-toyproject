@@ -258,6 +258,15 @@ contract StudyCafeLogic is StudyCafeStorage {
     }
 
     /**
+     * @dev Allows the admin to withdraw ether from the contract.
+     * @param amount The amount of ether to withdraw.
+     */
+    function withdrawEther(uint256 amount) external onlyAdmin {
+        require(address(this).balance >= amount, "Insufficient contract balance");
+        payable(admin).transfer(amount);
+    }
+
+    /**
      * @dev Calculates the payback percentage based on consecutive days attended.
      * @param daysAttended The number of days attended consecutively.
      * @return The calculated payback percentage.
