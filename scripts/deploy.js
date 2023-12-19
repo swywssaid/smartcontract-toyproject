@@ -2,32 +2,36 @@ const { ethers } = require("hardhat");
 
 async function main() {
   // Deploy StudyCafeStorage
-  const StudyCafeStorage = await ethers.getContractFactory("StudyCafeStorage");
-  const storage = await StudyCafeStorage.deploy();
-  await storage.deployed(); // 대기
-  console.log("StudyCafeStorage deployed to:", storage.address);
+  const _StudyCafeStorage = await ethers.getContractFactory("StudyCafeStorage");
+  StudyCafeStorage = await _StudyCafeStorage.deploy();
+  await StudyCafeStorage.deployed();
+  console.log("StudyCafeStorage deployed to:", StudyCafeStorage.address);
 
   // Deploy StudyCafeLogic
-  const StudyCafeLogic = await ethers.getContractFactory("StudyCafeLogic");
-  const logic = await StudyCafeLogic.deploy(100);
-  await logic.deployed(); // 대기
-  console.log("StudyCafeLogic deployed to:", logic.address);
+  const _StudyCafeLogic = await ethers.getContractFactory("StudyCafeLogic");
+  StudyCafeLogic = await _StudyCafeLogic.deploy(
+    ethers.utils.parseEther("1"),
+    ethers.utils.parseEther("0.05"),
+    10
+  );
+  await StudyCafeLogic.deployed();
+  console.log("StudyCafeLogic deployed to:", StudyCafeLogic.address);
 
   // Deploy StudyCafeProxy
-  const StudyCafeProxy = await ethers.getContractFactory("StudyCafeProxy");
-  const proxy = await StudyCafeProxy.deploy(logic.address);
-  await proxy.deployed(); // 대기
-  console.log("StudyCafeProxy deployed to:", proxy.address);
-
-  // Set the logic contract address in the proxy
-  await proxy.setLogicContract(logic.address);
-  console.log("Logic contract address set in StudyCafeProxy");
-
-  console.log("Deployment complete!");
+  const _StudyCafeProxy = await ethers.getContractFactory("StudyCafeProxy");
+  StudyCafeProxy = await _StudyCafeProxy.deploy(
+    StudyCafeLogic.address,
+    StudyCafeStorage.address
+  );
+  await StudyCafeProxy.deployed();
+  console.log("StudyCafeProxy deployed to:", StudyCafeProxy.address);
 }
 
 main()
-  .then(() => process.exit(0))
+  .then(() => {
+    console.log("Deployment complete!");
+    process.exit(0);
+  })
   .catch((error) => {
     console.error(error);
     process.exit(1);
