@@ -5,7 +5,6 @@ async function main() {
   const _StudyCafeStorage = await ethers.getContractFactory("StudyCafeStorage");
   StudyCafeStorage = await _StudyCafeStorage.deploy();
   await StudyCafeStorage.deployed();
-  console.log("StudyCafeStorage deployed to:", StudyCafeStorage.address);
 
   // Deploy StudyCafeLogic
   const _StudyCafeLogic = await ethers.getContractFactory("StudyCafeLogic");
@@ -15,7 +14,6 @@ async function main() {
     10
   );
   await StudyCafeLogic.deployed();
-  console.log("StudyCafeLogic deployed to:", StudyCafeLogic.address);
 
   // Deploy StudyCafeProxy
   const _StudyCafeProxy = await ethers.getContractFactory("StudyCafeProxy");
@@ -24,12 +22,10 @@ async function main() {
     StudyCafeStorage.address
   );
   await StudyCafeProxy.deployed();
-  console.log("StudyCafeProxy deployed to:", StudyCafeProxy.address);
 }
 
 main()
   .then(() => {
-    console.log("Deployment complete!");
     process.exit(0);
   })
   .catch((error) => {
